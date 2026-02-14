@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ОСКАР Авто</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <img src="logo.jpg" class="logo">
+    <h1>ОСКАР · Премиум авто</h1>
+    <p>Автоподбор и выкуп в Тюмени</p>
+  </div>
+
+  <div class="cars">
+
+    <div class="card">
+      <img src="bmw.jpg">
+      <h3>BMW X5</h3>
+      <span class="price">2 450 000 ₽</span>
+      <button onclick="openModal(bmw)">Подробнее</button>
+    </div>
+
+    <div class="card">
+      <img src="camry.jpg">
+      <h3>Toyota Camry</h3>
+      <span class="price">1 850 000 ₽</span>
+      <button onclick="openModal(camry)">Подробнее</button>
+    </div>
+
+  </div>
+
+  <button class="budget-btn">🚗 Подобрать авто под мой бюджет</button>
+
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">×</span>
+    <img id="m-img">
+    <h2 id="m-title"></h2>
+
+    <ul>
+      <li><b>Год:</b> <span id="m-year"></span></li>
+      <li><b>Пробег:</b> <span id="m-mileage"></span></li>
+      <li><b>Двигатель:</b> <span id="m-engine"></span></li>
+    </ul>
+
+    <div class="modal-price" id="m-price"></div>
+    <button class="main-btn">Оставить заявку</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
