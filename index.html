@@ -2,60 +2,159 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>ОСКАР Авто</title>
+  <title>OSKAR Авто</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#f4f4f4}
+    header{background:#fff;padding:20px;text-align:center;border-bottom:1px solid #ddd}
+    header img{max-width:200px}
+    h1{margin:10px 0 5px}
+    .subtitle{color:#555;font-size:14px}
+    .container{padding:15px;max-width:900px;margin:auto}
+    .cars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+    .car{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .car img{width:100%;height:180px;object-fit:cover}
+    .car-body{padding:15px}
+    .price{font-weight:bold;margin:10px 0}
+    button{background:#007bff;color:#fff;border:none;padding:10px;width:100%;border-radius:8px;font-size:16px;cursor:pointer}
+    button.black{background:#000;margin-top:20px}
+    .admin-btn{background:#333;margin-top:15px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center}
+    .modal-content{background:#fff;padding:20px;border-radius:12px;width:90%;max-width:400px}
+    input,select{width:100%;padding:10px;margin-bottom:10px}
+    .row{display:flex;gap:5px}
+    .row button{flex:1;font-size:14px}
+  </style>
 </head>
 <body>
 
-<div class="app">
+<header>
+  <h1>ОСКАР · Премиум авто</h1>
+  <div class="subtitle">Автоподбор и выкуп в Тюмени</div>
+</header>
 
-  <div class="header">
-    <img src="logo.jpg" class="logo">
-    <h1>ОСКАР · Премиум авто</h1>
-    <p>Автоподбор и выкуп в Тюмени</p>
-  </div>
+<div class="container">
+  <div class="cars" id="cars"></div>
 
-  <div class="cars">
-
-    <div class="card">
-      <img src="bmw.jpg">
-      <h3>BMW X5</h3>
-      <span class="price">2 450 000 ₽</span>
-      <button onclick="openModal(bmw)">Подробнее</button>
-    </div>
-
-    <div class="card">
-      <img src="camry.jpg">
-      <h3>Toyota Camry</h3>
-      <span class="price">1 850 000 ₽</span>
-      <button onclick="openModal(camry)">Подробнее</button>
-    </div>
-
-  </div>
-
-  <button class="budget-btn">🚗 Подобрать авто под мой бюджет</button>
-
+  <button class="black" onclick="openRequest()">🚗 Подобрать авто</button>
+  <button class="admin-btn" onclick="openAdmin()">Админка</button>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО -->
-<div class="modal" id="modal">
+<!-- ЗАЯВКА -->
+<div class="modal" id="requestModal">
   <div class="modal-content">
-    <span class="close" onclick="closeModal()">×</span>
-    <img id="m-img">
-    <h2 id="m-title"></h2>
-
-    <ul>
-      <li><b>Год:</b> <span id="m-year"></span></li>
-      <li><b>Пробег:</b> <span id="m-mileage"></span></li>
-      <li><b>Двигатель:</b> <span id="m-engine"></span></li>
-    </ul>
-
-    <div class="modal-price" id="m-price"></div>
-    <button class="main-btn">Оставить заявку</button>
+    <h3>Запись</h3>
+    <input id="name" placeholder="Имя">
+    <input id="phone" placeholder="Телефон">
+    <select id="time"></select>
+    <button onclick="sendRequest()">Отправить</button>
   </div>
 </div>
 
-<script src="script.js"></script>
+<!-- АДМИНКА -->
+<div class="modal" id="adminModal">
+  <div class="modal-content">
+    <input id="adminPass" placeholder="Пароль">
+    <button onclick="login()">Войти</button>
+
+    <div id="adminPanel" style="display:none">
+      <h4>Добавить авто</h4>
+      <input id="carName" placeholder="Название">
+      <input id="carPrice" placeholder="Цена">
+      <input type="file" id="carImg">
+      <button onclick="addCar()">Добавить</button>
+
+      <h4>Авто</h4>
+      <div id="adminCars"></div>
+
+      <h4>Время</h4>
+      <input id="newTime" placeholder="14:00">
+      <button onclick="addTime()">Добавить</button>
+      <div id="adminTimes"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let cars = JSON.parse(localStorage.getItem('cars')) || [];
+let times = JSON.parse(localStorage.getItem('times')) || ["14:00","15:00"];
+
+function render(){
+  const c=document.getElementById('cars');
+  c.innerHTML='';
+  cars.forEach((car,i)=>{
+    c.innerHTML+=`
+      <div class="car">
+        <img src="${car.img}">
+        <div class="car-body">
+          <h3>${car.name}</h3>
+          <div class="price">${car.price} ₽</div>
+          <button onclick="openRequest()">Подробнее</button>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('time').innerHTML=times.map(t=>`<option>${t}</option>`).join('');
+
+  document.getElementById('adminCars').innerHTML=cars.map((c,i)=>`
+    <div class="row">
+      <span>${c.name}</span>
+      <button onclick="delCar(${i})">❌</button>
+    </div>`).join('');
+
+  document.getElementById('adminTimes').innerHTML=times.map((t,i)=>`
+    <div class="row">
+      <span>${t}</span>
+      <button onclick="delTime(${i})">❌</button>
+    </div>`).join('');
+}
+
+function openRequest(){requestModal.style.display='flex'}
+function openAdmin(){adminModal.style.display='flex'}
+
+function login(){
+  if(adminPass.value==='admin123'){
+    adminPanel.style.display='block';
+    render();
+  }
+}
+
+function addCar(){
+  const r=new FileReader();
+  r.onload=()=>{
+    cars.push({name:carName.value,price:carPrice.value,img:r.result});
+    localStorage.setItem('cars',JSON.stringify(cars));
+    render();
+  }
+  r.readAsDataURL(carImg.files[0]);
+}
+
+function delCar(i){
+  cars.splice(i,1);
+  localStorage.setItem('cars',JSON.stringify(cars));
+  render();
+}
+
+function addTime(){
+  times.push(newTime.value);
+  localStorage.setItem('times',JSON.stringify(times));
+  render();
+}
+
+function delTime(i){
+  times.splice(i,1);
+  localStorage.setItem('times',JSON.stringify(times));
+  render();
+}
+
+function sendRequest(){
+  alert('Заявка отправлена');
+  requestModal.style.display='none';
+}
+
+render();
+</script>
+
 </body>
 </html>
+
